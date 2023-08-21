@@ -1,0 +1,248 @@
+{  
+  "BrakeHPUHub": {
+    "Symbols": [
+      "ObjPower.BrakeHPU1.Pressure",
+      "ObjPower.BrakeHPU1.OilLevelLow",
+      "ObjPower.BrakeHPU1.TemperatureHigh",
+      "ObjPower.BrakeHPU1.Pump1Active",
+      "ObjPower.BrakeHPU1.Pump2Active",
+      "ObjPower.BrakeHPU1.Error",
+      "ObjPower.BrakeHPU1.PressureOk",
+      "objGeneral.estopObject.ActivatedSwitchIdx",
+      "objGeneral.estopObject.ActivatedSwitchName",
+      "ObjPower.BrakeHPU1.Config.PressureLimit",
+      "ObjPower.BrakeHPU1.Config.PressurePumpOn",
+      "ObjPower.BrakeHPU1.Config.PressureEmergency",
+      "ObjPower.BrakeHPU1.Config.OpTimeMin"
+    ],
+    "RPC-methods": []
+  },  
+  "CtrlUnitHub": {
+    "Symbols": [
+      "objManDev.CrtlUnitMuxHMI.ControlUnitDataOut.ButtonSignalIndicators",
+      "objManDev.CrtlUnitMuxHMI.ControlUnitDataOut.ButtonSignals",
+      "objManDev.CrtlUnitMuxHMI.potmeterRaw",
+      "objManDev.CrtlUnitMuxHMI.potmeterReference",
+      "objManDev.CrtlUnitMuxHMI.velocityRaw",
+      "objManDev.CrtlUnitMuxHMI.velocityReference"
+    ],
+    "RPC-methods": []
+  },
+  "DanishSeineHub": {
+    "Symbols": [
+      "objCombiWinchPort.winch",
+      "objCombiWinchStbd.winch",
+      "ConfigPersistent.Config.EWinch[0].TensionMax",
+      "ConfigPersistent.Config.EWinch[1].TensionMax",
+      "objCombiWinchPort.eWinch.OpState",
+      "objCombiWinchStbd.eWinch.OpState",
+      "OpValuesPersistent.opValues.trawlControl"
+    ],
+    "RPC-methods": [
+      "objCombiWinchPort.eWinch;setLengthNull;{}",
+      "objCombiWinchStbd.eWinch;setLengthNull;{}",
+      "ObjPower.SoftStarter1;start;{}",
+      "ObjPower.SoftStarter2;start;{}",
+      "ObjPower.SoftStarter1;stop;{}",
+      "ObjPower.SoftStarter2;stop;{}"
+    ]
+  },
+  "DoubleTrawlingHub": {
+    "Symbols": [      
+      "ObjManDev.trawlCtrl.HaulInModeAllowed",
+      "ObjManDev.trawlCtrl.TowingModeAllowed",
+      "ObjManDev.trawlCtrl.PayoutModeAllowed",
+      "ObjManDev.trawlCtrl.opValues.LengthSetpoint",
+      "ObjManDev.trawlCtrl.opValues.LengthSetpoint2",
+      "ObjManDev.trawlCtrl.opValues.LengthSafetyRange",
+      "ObjManDev.trawlCtrl.opValues.LengthMaxDifference",
+      "ObjManDev.trawlCtrl.opValues.LengthWarningDifference",
+      "ObjManDev.trawlCtrl.opValues.SounderDiffMax",
+      "ObjManDev.trawlCtrl.LengthMaster",
+      "ObjManDev.trawlCtrl.Mode",
+      "ObjManDev.trawlCtrl.OpState",
+      "ObjManDev.trawlCtrl.opValues.Manual.VelocityMax",
+      "ObjManDev.trawlCtrl.opValues.Manual.TensionMax",
+      "ObjManDev.trawlCtrl.opValues.Manual.TensionMin",
+      "ObjManDev.trawlCtrl.opValues.HaulIn.VelocityMax",
+      "ObjManDev.trawlCtrl.opValues.HaulIn.TensionMax",
+      "ObjManDev.trawlCtrl.opValues.HaulIn.TensionMin",
+      "ObjManDev.trawlCtrl.opValues.PayOut.VelocityMax",
+      "ObjManDev.trawlCtrl.opValues.PayOut.TensionMax",
+      "ObjManDev.trawlCtrl.opValues.PayOut.TensionMin",
+      "ObjManDev.trawlCtrl.opValues.Towing.VelocityMax",
+      "ObjManDev.trawlCtrl.opValues.Towing.TensionMax",
+      "ObjManDev.trawlCtrl.opValues.Towing.TensionMin",
+      "ConfigPersistent.Config.EWinch[0].TensionMax",
+      "ConfigPersistent.Config.EWinch[0].WireLength",
+      "ConfigPersistent.Config.EWinch[1].TensionMax",
+      "ConfigPersistent.Config.EWinch[1].WireLength",      
+      "Obj.RudderSensor.ValueRaw",
+      "Obj.RudderSensor.Value",
+      "Obj.RudderSensor.ValueMax",
+      "Obj.RudderSensor.ValueMin",
+      "ObjManDev.trawlCtrl.opValues.RudderAngleMasterSelection",
+      "ObjManDev.trawlCtrl.opValues.MasterSelection",
+      "ObjManDev.trawlCtrl.SounderLengthDifference",
+      "ObjManDev.trawlCtrl.opValues.TDE",
+      "ObjManDev.trawlCtrl.opValues.TurtleMode",      
+      "ConfigPersistent.Config.UserWinch[7].safetyDistance",      
+      "ConfigPersistent.Config.EWinch[2].TensionMax",
+      "ConfigPersistent.Config.EWinch[2].WireLength",
+      "ObjManDev.trawlCtrl.opValues.TrawlType",
+      "ObjManDev.trawlCtrl.opValues.LenghtOffsetSetpoint2",
+      "ObjManDev.trawlCtrl.HaulInToSafetyLengthModeAllowed"
+    ],
+    "RPC-methods": []
+  },
+  "DriveHub": {
+    "Symbols": [
+      "objDriveTrain.driveInfos[@index@].toHMI",
+      "objDriveTrain.driveInfos[@index@].N"
+    ],
+    "RPC-methods": []
+  },
+  "EmergencyStopHub": {
+    "Symbols": [      
+      "ObjHMI.doReboot"
+    ],
+    "RPC-methods": []
+  },
+  "PowerManagementHub": {
+    "Symbols": [      
+      "ObjHMI.PMSInhibit"      
+    ],
+    "RPC-methods": []
+  },
+  "SpoolingHub": {
+    "Symbols": [
+      "ObjManDev.SpoolAccessHMI.HeadPosition",
+      "ObjManDev.SpoolAccessHMI.PIDError",
+      "ObjManDev.SpoolAccessHMI.Speed",
+      "ObjManDev.SpoolAccessHMI.OpState",
+      "ObjManDev.SpoolAccessHMI.SpoolIO_In.ManualModeIO"
+    ],
+    "RPC-methods": []
+  },
+  "TrawlControllerHub": {
+    "Symbols": [
+      "ConfigPersistent.config.trawlControlTowing.KpVelocity",
+      "ConfigPersistent.config.trawlControlTowing.KpTorque",
+      "ConfigPersistent.config.trawlControlTowing.KiTorque",
+      "ConfigPersistent.config.trawlControlTowing.deadBandLength",
+      "ConfigPersistent.config.trawlControlTowing.KiVelocityLimit",
+      "ConfigPersistent.config.trawlControlTowing.KiTensionLimit",
+      "ConfigPersistent.config.trawlControlPayout.KpVelocity",
+      "ConfigPersistent.config.trawlControlPayout.KpTorque",
+      "ConfigPersistent.config.trawlControlPayout.KiTorque",
+      "ConfigPersistent.config.trawlControlPayout.deadBandLength",
+      "ConfigPersistent.config.trawlControlPayout.KiVelocityLimit",
+      "ConfigPersistent.config.trawlControlPayout.KiTensionLimit",
+      "ConfigPersistent.config.trawlControlHaulIn.KpVelocity",
+      "ConfigPersistent.config.trawlControlHaulIn.KpTorque",
+      "ConfigPersistent.config.trawlControlHaulIn.KiTorque",
+      "ConfigPersistent.config.trawlControlHaulIn.deadBandLength",
+      "ConfigPersistent.config.trawlControlHaulIn.KiVelocityLimit",
+      "ConfigPersistent.config.trawlControlHaulIn.KiTensionLimit",
+      "ObjManDev.trawlCtrl.ErrorPosition1",
+      "objCombiWinchStbd.eWinch.Tension",
+      "objCombiWinchPort.eWinch.Tension",
+      "objCombiWinchStbd.eWinch.Length",
+      "objCombiWinchPort.eWinch.Length",
+      "OpValuesPersistent.opValues.trawlControl.LengthSetpoint",
+      "ObjManDev.trawlCtrl.Mode",
+      "ObjManDev.trawlCtrl.HaulInModeAllowed",
+      "ObjManDev.trawlCtrl.TowingModeAllowed",
+      "ObjManDev.trawlCtrl.PayoutModeAllowed",
+      "OpValuesPersistent.opValues.trawlControl.torqueIntegratorPreset",
+      "OpValuesPersistent.opValues.trawlControl.torqueIntegratorPresetPayout",
+      "objGeneral.estopObject.ActivatedSwitchIdx",
+      "objGeneral.estopObject.ActivatedSwitchName"      
+    ],
+    "RPC-methods": [
+      "objNetSounder.eWinch;setLengthNull;{}"
+    ]
+  },
+  "TrawlingHub": {
+    "Symbols": [
+      "objCombiWinchStbd.eWinch.Length",
+      "objCombiWinchStbd.eWinch.Speed",
+      "objCombiWinchStbd.eWinch.SpeedMax",
+      "objCombiWinchStbd.eWinch.Tension",
+      "objCombiWinchStbd.eWinch.Torque",
+      "objCombiWinchStbd.eWinch.TorqueMax",
+      "objCombiWinchStbd.eWinch.TorqueRel",
+      "objCombiWinchStbd.eWinch.Velocity",
+      "objCombiWinchPort.eWinch.Length",
+      "objCombiWinchPort.eWinch.Speed",
+      "objCombiWinchPort.eWinch.SpeedMax",
+      "objCombiWinchPort.eWinch.Tension",
+      "objCombiWinchPort.eWinch.Torque",
+      "objCombiWinchPort.eWinch.TorqueMax",
+      "objCombiWinchPort.eWinch.TorqueRel",
+      "objCombiWinchPort.eWinch.Velocity",
+      "objManDev.trawlCtrl.HaulInModeAllowed",
+      "objManDev.trawlCtrl.TowingModeAllowed",
+      "objManDev.trawlCtrl.PayoutModeAllowed",
+      "OpValuesPersistent.opvalues.trawlControl.LengthSetpoint",
+      "OpValuesPersistent.opvalues.trawlControl.LengthSetpoint2",
+      "OpValuesPersistent.opvalues.trawlControl.LengthSafetyRange",
+      "OpValuesPersistent.opvalues.trawlControl.LengthMaxDifference",
+      "OpValuesPersistent.opvalues.trawlControl.LengthWarningDifference",
+      "objManDev.trawlCtrl.LengthMaster",
+      "objManDev.trawlCtrl.Mode",
+      "objManDev.trawlCtrl.OpState",
+      "OpValuesPersistent.opvalues.trawlControl.Manual.VelocityMax",
+      "OpValuesPersistent.opvalues.trawlControl.Manual.TensionMax",
+      "OpValuesPersistent.opvalues.trawlControl.Manual.TensionMin",
+      "OpValuesPersistent.opvalues.trawlControl.HaulIn.VelocityMax",
+      "OpValuesPersistent.opvalues.trawlControl.HaulIn.TensionMax",
+      "OpValuesPersistent.opvalues.trawlControl.HaulIn.TensionMin",
+      "OpValuesPersistent.opvalues.trawlControl.PayOut.VelocityMax",
+      "OpValuesPersistent.opvalues.trawlControl.PayOut.TensionMax",
+      "OpValuesPersistent.opvalues.trawlControl.PayOut.TensionMin",
+      "OpValuesPersistent.opvalues.trawlControl.Towing.VelocityMax",
+      "OpValuesPersistent.opvalues.trawlControl.Towing.TensionMax",
+      "OpValuesPersistent.opvalues.trawlControl.Towing.TensionMin",
+      "ConfigPersistent.Config.EWinch[0].TensionMax",
+      "ConfigPersistent.Config.EWinch[0].WireLength",
+      "ConfigPersistent.Config.EWinch[1].TensionMax",
+      "ConfigPersistent.Config.EWinch[1].WireLength",
+      "objCombiWinchStbd.eWinch.OpState",
+      "objCombiWinchPort.eWinch.OpState",
+      "OpValuesPersistent.opvalues.trawlControl.TDE",
+      "objGeneral.estopObject.ActivatedSwitchIdx",
+      "objGeneral.estopObject.ActivatedSwitchName",
+      "OpValuesPersistent.opvalues.trawlControl.TrawlType",
+      "objManDev.trawlCtrl.HaulInModeAllowed",
+      "OpValuesPersistent.opvalues.trawlControl.PayOut.VelocityShooting",
+      "OpValuesPersistent.opvalues.trawlControl.PayOut.TorqueShooting"
+    ],
+    "RPC-methods": []
+  },
+  "TriplexHPU": {
+    "Symbols": [
+      "ObjPower.SoftStarter1.Running",
+      "ObjPower.SoftStarter2.Running",
+      "ObjPower.SoftStarter1.Enabled",
+      "ObjPower.SoftStarter2.Enabled"
+    ],
+    "RPC-methods": []
+  },
+  "TwinCatService": { // This was the next call to PLC, Not sure if this aktually was called or not.
+    "Symbols": [
+      "ConfigPersistent.Config.eWinch",
+      "ConfigPersistent.Config.hWinch",
+      "configpersistent.Config.userWinch",
+      "configpersistent.Config.spool",
+      "configpersistent.Config.ctrlBaseUnit",
+      "ConfigPersistent.Config",
+      "OpValuesPersistent.opvalues",
+      "configpersistent.Config.Drive",
+      "ObjDriveTrain.driveInfos[0].toHMI",
+      "ObjDriveTrain.driveInfos[0].N",
+      "obj.P6.Config.unitsInUse"
+    ],
+    "RPC-methods": []
+  }
+}

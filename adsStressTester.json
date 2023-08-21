@@ -1,0 +1,45 @@
+{
+  //"TwinCatNetId": "10.0.0.170.1.1", //The ADS NetId of PLC (Windows)
+  "TwinCatNetId": "10.0.0.68.1.1", //The ADS NetId of PLC (BSD)
+  "TwinCatPort": 851,
+  // Logging with Serilog - https://github.com/serilog/serilog-settings-configuration/tree/dev
+  "Serilog": {
+    "Using": [ "Serilog.Sinks.Console", "Serilog.Sinks.File" ],
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Error",
+        "SymbolValidator.Program": "Warning",
+        "API.Services": "Information",
+        "AdsStressTester.Program": "Information"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console", // https://github.com/serilog/serilog-sinks-console
+        "Args": {
+          "outputTemplate": "[{Level}] {SourceContext} {Message}{NewLine}{Exception}"
+          //"theme": "Serilog.Sinks.SystemConsole.Themes.SystemConsoleTheme::Grayscale, Serilog.Sinks.Console"
+        }
+      },
+      {
+        "Name": "File", // https://github.com/serilog/serilog-sinks-file
+        "Args": {
+          "path": "Logs/ADSStressTesterLog.txt",
+          "rollingInterval": "Day",
+          "outputTemplate": "[{Timestamp:HH:mm:ss} {SourceContext} [{Level}] {Message}{NewLine}{Exception}"
+        }
+      }
+    ]
+  },
+  "hubs": [
+    "StressTest"
+  ],
+  "adsWriteVariables": [
+    { "counters.numbers[0]": 42 },
+    { "counters.numbers[23]": 43 },
+    { "counters.numbers[35]": 44 },
+    { "counters.numbers[75]": 45 },
+    { "counters.numbers[99]": 46 }
+  ]
+}

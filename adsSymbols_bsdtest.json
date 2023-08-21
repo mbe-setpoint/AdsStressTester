@@ -1,0 +1,28 @@
+{
+  "StressTest": {
+    "Symbols": [
+      "counters.counter01.Value",
+      "counters.counter02.Value",
+      "counters.counter03.Value",
+      "counters.counter04.Value",
+      "counters.counter05.Value",
+      "counters.counter06.Value",
+      "counters.counter07.Value",
+      "counters.counter08.Value",
+      "counters.counter09.Value",
+      "counters.counter10.Value",
+      "counters.counter11.Value",
+      "counters.counter12.Value",
+      "counters.counter13.Value",
+      "counters.counter14.Value",
+      "counters.counter15.Value",
+      "counters.counter16.Value",
+      "counters.counter17.Value",
+      "counters.counter18.Value",
+      "counters.counter19.Value",
+      "counters.counter20.Value",
+      "counters.numbers"
+    ],
+    "RPC-methods": []
+  }
+}

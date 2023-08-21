@@ -1,0 +1,56 @@
+{
+  "TwinCatNetId": "10.0.0.170.1.1", //The ADS NetId of PLC (Windows)
+  //"TwinCatNetId": "10.0.0.68.1.1", //The ADS NetId of PLC (BSD)
+  "TwinCatPort": 851,
+  // Logging with Serilog - https://github.com/serilog/serilog-settings-configuration/tree/dev
+  "Serilog": {
+    "Using": [ "Serilog.Sinks.Console", "Serilog.Sinks.File" ],
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Error",
+        "SymbolValidator.Program": "Warning",
+        "API.Services": "Information",
+        "AdsStressTester.Program": "Information"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console", // https://github.com/serilog/serilog-sinks-console
+        "Args": {
+          "outputTemplate": "[{Level}] {SourceContext} {Message}{NewLine}{Exception}"
+          //"theme": "Serilog.Sinks.SystemConsole.Themes.SystemConsoleTheme::Grayscale, Serilog.Sinks.Console"
+        }
+      },
+      {
+        "Name": "File", // https://github.com/serilog/serilog-sinks-file
+        "Args": {
+          "path": "Logs/ADSStressTesterLog.txt",
+          "rollingInterval": "Day",
+          "outputTemplate": "[{Timestamp:HH:mm:ss} {SourceContext} [{Level}] {Message}{NewLine}{Exception}"
+        }
+      }
+    ]
+  },
+  "hubs": [
+    "BrakeHPUHub",    
+    "CtrlUnitHub",
+    "DanishSeineHub",
+    "DoubleTrawlingHub",
+    "DriveHub",
+    "EmergencyStopHub",    
+    "PowerManagementHub",    
+    "SpoolingHub",
+    "TrawlControllerHub",
+    "TrawlingHub",
+    "TriplexHPU",
+    "TwinCatService"
+  ],
+  "adsWriteVariables": [
+    { "ObjManDev.trawlCtrl.opValues.HaulIn.VelocityMax": 100 },
+    { "ObjManDev.trawlCtrl.opValues.HaulIn.TensionMax": 100 },
+    { "ObjManDev.trawlCtrl.opValues.PayOut.VelocityMax": 100 },
+    { "ObjManDev.trawlCtrl.opValues.PayOut.TensionMin": 100 },
+    { "ObjManDev.trawlCtrl.opValues.Towing.VelocityMax": 100 }
+  ]
+}
