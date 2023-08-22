@@ -271,7 +271,7 @@ namespace AdsStressTester
 
             try
             {
-                /*This method can be used both to read and write to a json
+                  /*This method can be used both to read and write to a json
                     * The variable should be in the form of = "{\"symbol\":\"obj.aStruct\"}" without a new value for reading
                     * and in the form of symbolName = "{\"symbol\":\"obj.aStruct\", "value": xxx}" in order to rewrite a new value
                 */
@@ -281,14 +281,9 @@ namespace AdsStressTester
                 _writer = new BinaryWriter(_writeStream);
                 _writer.Write(Encoding.ASCII.GetBytes(symbolName));
 
-
-                //_readData = new byte[_defaultBitValue + extraSize];
-                //_readData = new byte[symbolName.Length + 1];
-
-                await _client.ReadAsync(0xf070, 0, _writeData, _cancel);
-                //await _client.ReadWriteAsync(0xf070, 0, _readData, _writeData, _cancel);
-
-                return Encoding.ASCII.GetString(_writeData).TrimEnd('\u0000');
+                _readData = new byte[_defaultBitValue + extraSize];
+                await _client.ReadWriteAsync(0xf070, 0, _readData, _writeData, _cancel);
+                return Encoding.ASCII.GetString(_readData).TrimEnd('\u0000');
             }
             finally
             {
