@@ -24,10 +24,10 @@ namespace AdsStressTester
         private int _minBitSize = 1000; // 26429;
         private int _defaultBitValue = 30000;
         public bool busyRpc = false;
-        public bool isBusy = false;        
+        public bool isBusy = false;
         private List<ResultHandle> _resultHandlesCache; // caching of resultHandles         
         private List<ResultValue<IAdsSymbol>> _symbolsCache; // caching of symbols
-                                                                
+
 
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
@@ -86,7 +86,7 @@ namespace AdsStressTester
             {
                 semaphore.Release();
             }
-        }        
+        }
 
         public async Task<object> ReadSymbolValue(string symbolNames, int extraSize = 0)
         {
@@ -96,43 +96,48 @@ namespace AdsStressTester
             using (AdsClient client = new AdsClient())
             {
                 client.Connect(_netId, _port);
-                ResultReadDeviceState result = await client.ReadStateAsync(_cancel);
-                if (result.Succeeded && result.State.AdsState == AdsState.Run)
+                try
                 {
-                    try
+                    if (symbolList != null)
                     {
-                        if (symbolList != null)
+                        for (int i = 0; i < symbolList.Count; i++)
                         {
-                            for (int i = 0; i < symbolList.Count; i++)
+                            var symbolName = symbolList[i]["symbol"];
+                            ResultValue<IAdsSymbol>? symbol = _symbolsCache.Find(s => s.Value.InstancePath == symbolName);
+                            if (symbol == null)
                             {
-                                var symbolName = symbolList[i]["symbol"];
-                                ResultValue<IAdsSymbol> symbol = await client.ReadSymbolAsync(symbolName, _cancel);
-                                if (symbol != null && symbol.Value != null)
+                                ResultValue<IAdsSymbol> newSymbol = await client.ReadSymbolAsync(symbolName, _cancel);
+                                if (newSymbol != null)
                                 {
-                                    var value = await client.ReadValueAsync(symbol.Value as ISymbol, _cancel);
-                                    if (value != null && value.Value != null)
-                                    {
-                                        symbolList[i]["symbol"] = symbolName + ", " + "value:" + value.Value.ToString();
-                                    }
+                                    //Put symbol in cache
+                                    _symbolsCache.Add(newSymbol);
+                                    symbol = newSymbol;
                                 }
                             }
 
-                            string symbolsWithValues = JsonConvert.SerializeObject(symbolList, Formatting.None);
-                            return symbolsWithValues;
+                            // Getvalue from PLC
+                            var value = await client.ReadValueAsync(symbol.Value as ISymbol, _cancel);
+                            if (value != null && value.Value != null)
+                            {
+                                // Append the value to the symbol list
+                                symbolList[i]["symbol"] = symbolName + ", " + "value:" + value.Value.ToString();
+                            }
                         }
                     }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e.Message);
-                        return null;
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }
 
-                return null;
+                    // Convert all symbols and values to Json and return
+                    string symbolsWithValues = JsonConvert.SerializeObject(symbolList, Formatting.None);
+                    return symbolsWithValues;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.Message);
+                    return null;
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
             }
         }
 
@@ -145,15 +150,23 @@ namespace AdsStressTester
                 using (AdsClient client = new AdsClient())
                 {
                     client.Connect(_netId, _port);
-                    ResultReadDeviceState result = await client.ReadStateAsync(_cancel);
-                    if (result.Succeeded && result.State.AdsState == AdsState.Run)
+                    // Try to get symbol from cache
+                    ResultValue<IAdsSymbol>? symbol = _symbolsCache.Find(s => s.Value.InstancePath == variable.Symbol);
+                    if (symbol == null)
                     {
-                        ResultValue<IAdsSymbol> symbol = await client.ReadSymbolAsync(variable.Symbol, _cancel);
-                        if (symbol != null && symbol.Value != null)
+                        ResultValue<IAdsSymbol> newSymbol = await client.ReadSymbolAsync(variable.Symbol, _cancel);
+                        if (newSymbol != null)
                         {
-                            var value = await client.WriteValueAsync(symbol.Value as ISymbol, variable.Value, _cancel);
-                            return value;
+                            //Put symbol in cache
+                            _symbolsCache.Add(newSymbol);
+                            symbol = newSymbol;
                         }
+                    }
+                    
+                    if (symbol.Value != null)
+                    {
+                        var value = await client.WriteValueAsync(symbol.Value as ISymbol, variable.Value, _cancel);
+                        return value;
                     }
                 }
             }
@@ -284,6 +297,6 @@ namespace AdsStressTester
         public async Task<object> GetSystemUnits()
         {
             return await ReadSymbolValue("{\"symbol\":\"obj.P6.Config.unitsInUse\"}");
-        }       
+        }
     }
 }
