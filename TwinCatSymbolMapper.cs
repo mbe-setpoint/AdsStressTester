@@ -15,20 +15,21 @@ namespace AdsStressTester
 
     public class TwinCatSymbolMapper
     {
-        private readonly ILogger<TwinCatSymbolMapper> _logger;        
+        private readonly ILogger<TwinCatSymbolMapper> _logger;
         private readonly TwinCatService _twinCatService;
         private Dictionary<string, Dictionary<string, List<string>>> _symbolsDict;
         private readonly string _symbolFilePath;
 
         public TwinCatSymbolMapper(ILogger<TwinCatSymbolMapper> logger, TwinCatService twinCatService, string symbolFilePath = "adsSymbols.json")
         {
-            _logger = logger;            
-            _twinCatService = twinCatService;            
+            _logger = logger;
+            _twinCatService = twinCatService;
             _symbolFilePath = symbolFilePath;
             getSymbolsFromFile();
         }
 
-        public Dictionary<string, Dictionary<string, List<string>>> SymbolsDict { 
+        public Dictionary<string, Dictionary<string, List<string>>> SymbolsDict
+        {
             get { return _symbolsDict; }
         }
 
@@ -53,10 +54,10 @@ namespace AdsStressTester
             {
                 var rpcMethodsInHub = _symbolsDict[hubName]["RPC-methods"];
                 methods.AddRange(rpcMethodsInHub);
-            }             
+            }
 
             return methods;
-            
+
             //else
             //{
             //    _logger.LogWarning($"ADS Symbol file does not contain a section for {hubName}");                
@@ -80,7 +81,7 @@ namespace AdsStressTester
             }
             symbolString.Remove(symbolString.Length - 1, 1);
             symbolString.Append("]");
-            var finalString = symbolString.ToString();            
+            var finalString = symbolString.ToString();
             return finalString;
         }
 
@@ -96,45 +97,36 @@ namespace AdsStressTester
 
         public async Task<Tuple<SymbolCheckReturnCodes, string>> CheckSymbolString(string symbolString)
         {
-            var connected = await _twinCatService.Connect();
-            if (connected)
+            dynamic data;
+            data = await _twinCatService.ReadSymbolValue(symbolString);
+            if (data != null)
             {
-                dynamic data;
-                data = await _twinCatService.ReadSymbolValue(symbolString);
-                if (data != null)
+                if (data != string.Empty)
                 {
-                    if (data != string.Empty)
-                    {
-                        return ExtractReturnValue(data);
-                    }
-                    else
-                    {
-                        return Tuple.Create(SymbolCheckReturnCodes.EMPTY_RESULT, "Empty result string");
-                    }                    
+                    return ExtractReturnValue(data);
                 }
-                
-                return Tuple.Create(SymbolCheckReturnCodes.FATAL, "Catastrooof");
+                else
+                {
+                    return Tuple.Create(SymbolCheckReturnCodes.EMPTY_RESULT, "Empty result string");
+                }
             }
-            else
-            {
-                _logger.LogError("Could not connect to ADS");
-                return Tuple.Create(SymbolCheckReturnCodes.ADS_CONNECT_ERROR, "Error connecting to ADS");
-            }
+
+            return Tuple.Create(SymbolCheckReturnCodes.FATAL, "Catastrooof");
         }
 
         private Tuple<SymbolCheckReturnCodes, string> ExtractReturnValue(string symbolResponse)
         {
             var returnDict = JsonConvert.DeserializeObject<List<Dictionary<string, dynamic>>>(symbolResponse)[0];
             if (returnDict.ContainsKey("error")) //Symbol not found: [{"symbol":"gvlAnchorPO.winch.EXnable","error":{"gvlAnchorPO.winch.EXnable":"unknown"}}]
-            {                
+            {
                 return Tuple.Create(SymbolCheckReturnCodes.UNKNOWN_SYMBOL, returnDict["error"].ToString());
             }
             else if (returnDict.ContainsKey("value")) //Symbol Ok: [{"symbol":"gvlAnchorPO.winch.Enable","value":true}]
             {
                 return Tuple.Create(SymbolCheckReturnCodes.OK, returnDict["value"].ToString());
             }
-            
+
             return null;
-        }        
+        }
     }
 }

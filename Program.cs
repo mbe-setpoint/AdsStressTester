@@ -92,21 +92,23 @@ namespace AdsStressTester
 
         public async Task<int> DoStress(int numberOfRuns, int millisecondsDelay, IConfiguration config)
         {
+            LoadGenerator loadGenerator = new LoadGenerator(_logger, _twinCatService, _twinCatSymbolMapper, config);
             try
             {
+
                 _logger.LogInformation("Running test");
                 if (numberOfRuns < 0)
                 {
                     _logger.LogInformation("Running until stopped. Press Ctrl+c to terminate");
                 }
-                _ = await new LoadGenerator(_logger, _twinCatService, _twinCatSymbolMapper, config).GetData(numberOfRuns, millisecondsDelay);
+                _ = await loadGenerator.GetData(numberOfRuns, millisecondsDelay);
                 _logger.LogInformation("Finished");
                 return 0;
 
             }
             catch (Exception e)
             {
-                _logger.LogError("Exception: ", e.Message);
+                _logger.LogError("Exception: " + e.Message);
                 return -1;
             }
         }

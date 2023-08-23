@@ -20,17 +20,11 @@ namespace AdsStressTester
         }
 
         public async Task<bool> GetData(int numberOfRuns, int millisecondsDelay)
-        {
-            var connected = _twinCatService.isConnected;
+        {            
             var hubs = _config.GetSection("hubs").Get<List<string>>();
             var variables = _config.GetSection("adsWriteVariables").Get<List<Dictionary<string, dynamic>>>();
 
-            if(!connected)
-            {
-                connected = await _twinCatService.Connect();
-            }            
-
-            if (connected && hubs != null && variables != null)
+            if (hubs != null && variables != null)
             {
                 dynamic _trawlWinchData;
                 int i = 0;
@@ -54,18 +48,22 @@ namespace AdsStressTester
                                 _logger.LogDebug($"{item}");
                             }
                         }
+                        else
+                        {
+                            _logger.LogError("Data is null");                            
+                        }
 
                         await Task.Delay(millisecondsDelay);                        
                     }
 
                     if (i % 4 == 0)
                     {
-                        WriteValue(variables);
+                        // WriteValue(variables);
                     }
 
                     if (i % 7 == 0)
                     {
-                        CallRpcMethod();
+                        // CallRpcMethod();
                     }
 
                     i++;
