@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using System.Diagnostics;
 using TwinCAT;
 
 namespace AdsStressTester
@@ -24,8 +25,8 @@ namespace AdsStressTester
             ILogger<TwinCatSymbolMapper> twinCatSymbolMapperLogger;
             ILogger<Program> mainLogger;
 
-            int numberOfRuns = -1;
-            int milisecondsDelay = 500;
+            int numberOfRuns = 100;
+            int milisecondsDelay = 10;
 
             // Setup loggers
             IConfiguration config = new ConfigurationBuilder()
@@ -67,7 +68,11 @@ namespace AdsStressTester
             var stresser = new Stresser(mainLogger, twinCatService, symbolMapper);
             var eventMonitor = new EventLoggerMonitor(mainLogger, config, twinCatService);
             eventMonitor.ConnectLogger();
-            return await stresser.DoStress(numberOfRuns: numberOfRuns, millisecondsDelay: milisecondsDelay, config: config);
+            var stopwatch = Stopwatch.StartNew();
+            var result = await stresser.DoStress(numberOfRuns: numberOfRuns, millisecondsDelay: milisecondsDelay, config: config);
+            stopwatch.Stop();
+            mainLogger.LogInformation($"Time to run {numberOfRuns} iterations was: {stopwatch.ElapsedMilliseconds} ms");
+            return result;
         }
     }
 
