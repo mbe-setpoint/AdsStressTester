@@ -19,61 +19,74 @@ namespace AdsStressTester
             _symbolMapper = symbolMapper;
         }
 
-        public async Task<bool> GetData(int numberOfRuns, int millisecondsDelay)
-        {            
+        public async Task<bool> GetData(int numberOfRuns, int millisecondsDelay, bool useTwinCatService = true)
+        {
             var hubs = _config.GetSection("hubs").Get<List<string>>();
             var variables = _config.GetSection("adsWriteVariables").Get<List<Dictionary<string, dynamic>>>();
+            var jsonDataInterface = new JsonDataInterface();
 
-            if (hubs != null && variables != null)
+            using (_twinCatService)
             {
-                dynamic _trawlWinchData;
-                int i = 0;
+                if (hubs != null && variables != null)
+                {
+                    dynamic _data;
+                    int i = 0;
 
-                while (numberOfRuns < 0 || i < numberOfRuns)
-                {                    
-                    foreach (string hub in hubs)
+                    while (numberOfRuns < 0 || i < numberOfRuns)
                     {
-                        var symbolString = _symbolMapper.GetSymbolsStringForHub(hub);
-                        _trawlWinchData = await _twinCatService.ReadSymbolValue(symbolString);
-                        if (!string.IsNullOrEmpty(_trawlWinchData))
+                        foreach (string hub in hubs)
                         {
-                            List<object> result = JsonConvert.DeserializeObject<List<object>>(_trawlWinchData);
-                            _logger.LogInformation($"Run # {i + 1} - Got symbols from {hub} - {result.Count} symbols");
-                            foreach (var item in result)
+                            var symbolString = _symbolMapper.GetSymbolsStringForHub(hub);
+
+                            if (useTwinCatService)
                             {
-                                if (item.ToString().Contains("unknown"))
-                                {
-                                    _logger.LogError(item.ToString());
-                                }
-                                _logger.LogDebug($"{item}");
+                                _data = await _twinCatService.ReadSymbolValue(symbolString);                                
                             }
+                            else
+                            {
+                                _data = jsonDataInterface.getData(symbolString);
+                            }
+
+                            if (!string.IsNullOrEmpty(_data))
+                            {
+                                List<object> result = JsonConvert.DeserializeObject<List<object>>(_data);
+                                _logger.LogInformation($"Run # {i + 1} - Got symbols from {hub} - {result.Count} symbols");
+                                foreach (var item in result)
+                                {
+                                    if (item.ToString().Contains("unknown"))
+                                    {
+                                        _logger.LogError(item.ToString());
+                                    }
+                                    _logger.LogDebug($"{item}");
+                                }
+                            }
+                            else
+                            {
+                                _logger.LogError("Data is null");
+                            }
+
+                            await Task.Delay(millisecondsDelay);
                         }
-                        else
+
+                        if (i % 4 == 0)
                         {
-                            _logger.LogError("Data is null");                            
+                            //WriteValue(variables);
                         }
 
-                        await Task.Delay(millisecondsDelay);                        
-                    }
+                        if (i % 7 == 0)
+                        {
+                            //CallRpcMethod();
+                        }
 
-                    if (i % 4 == 0)
-                    {
-                        // WriteValue(variables);
+                        i++;
                     }
-
-                    if (i % 7 == 0)
-                    {
-                        // CallRpcMethod();
-                    }
-
-                    i++;
+                    return true;
                 }
-                return true;
-            }
-            else
-            {
-                _logger.LogWarning("Could not connect to ADS or missing hubs and/or variables in adsSymbols file");
-                return false;
+                else
+                {
+                    _logger.LogWarning("Could not connect to ADS or missing hubs and/or variables in adsSymbols file");
+                    return false;
+                }
             }
         }
 

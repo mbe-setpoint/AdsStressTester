@@ -69,9 +69,9 @@ namespace AdsStressTester
             var eventMonitor = new EventLoggerMonitor(mainLogger, config, twinCatService);
             eventMonitor.ConnectLogger();
             var stopwatch = Stopwatch.StartNew();
-            var result = await stresser.DoStress(numberOfRuns: numberOfRuns, millisecondsDelay: milisecondsDelay, config: config);
+            var result = await stresser.DoStress(numberOfRuns: numberOfRuns, millisecondsDelay: milisecondsDelay, config: config, useTwinCatSerive: false);
             stopwatch.Stop();
-            mainLogger.LogInformation($"Time to run {numberOfRuns} iterations was: {stopwatch.ElapsedMilliseconds} ms");
+            mainLogger.LogInformation($"Time to run {numberOfRuns} iterations was: {stopwatch.ElapsedMilliseconds} ms");           
             return result;
         }
     }
@@ -90,7 +90,7 @@ namespace AdsStressTester
             _twinCatSymbolMapper = twinCatSymbolMapper;
         }
 
-        public async Task<int> DoStress(int numberOfRuns, int millisecondsDelay, IConfiguration config)
+        public async Task<int> DoStress(int numberOfRuns, int millisecondsDelay, IConfiguration config, bool useTwinCatSerive = true)
         {
             LoadGenerator loadGenerator = new LoadGenerator(_logger, _twinCatService, _twinCatSymbolMapper, config);
             try
@@ -101,7 +101,7 @@ namespace AdsStressTester
                 {
                     _logger.LogInformation("Running until stopped. Press Ctrl+c to terminate");
                 }
-                _ = await loadGenerator.GetData(numberOfRuns, millisecondsDelay);
+                _ = await loadGenerator.GetData(numberOfRuns, millisecondsDelay, useTwinCatSerive);
                 _logger.LogInformation("Finished");
                 return 0;
 
