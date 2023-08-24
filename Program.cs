@@ -25,7 +25,7 @@ namespace AdsStressTester
             ILogger<TwinCatSymbolMapper> twinCatSymbolMapperLogger;
             ILogger<Program> mainLogger;
 
-            int numberOfRuns = 100;
+            int numberOfRuns = 10;
             int milisecondsDelay = 10;
 
             // Setup loggers

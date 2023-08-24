@@ -10,6 +10,9 @@ using TwinCAT.Ads.Native;
 using System.Buffers.Binary;
 using System.Diagnostics.Metrics;
 using TwinCAT.TypeSystem;
+using TwinCAT;
+using TwinCAT.ValueAccess;
+using System.Net.Sockets;
 
 namespace AdsStressTester
 {
@@ -27,6 +30,7 @@ namespace AdsStressTester
         public bool isBusy = false;
         private List<ResultHandle> _resultHandlesCache; // caching of resultHandles         
         private List<ResultValue<IAdsSymbol>> _symbolsCache; // caching of symbols
+        private ResultSymbols _plcSymbols;
 
 
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
@@ -42,6 +46,35 @@ namespace AdsStressTester
             _port = _config.GetValue<Int16>("TwinCatPort");
             _symbolsCache = new List<ResultValue<IAdsSymbol>>();
             _resultHandlesCache = new List<ResultHandle>();
+            // LoadAllSymbols();
+        }
+
+
+        private async void LoadAllSymbols()
+        {
+            using (AdsClient client = new AdsClient())
+            {
+                CancellationToken cancel = CancellationToken.None;
+
+                uint valueToRead = 0;
+                uint valueToWrite = 42;
+
+                client.Connect(_netId, _port);
+
+                // Load all Symbols + DataTypes
+                ISymbolLoader loader = SymbolLoaderFactory.Create(client, SymbolLoaderSettings.Default);
+
+                _plcSymbols = await loader.GetSymbolsAsync(cancel);
+
+                if (_plcSymbols.Succeeded)
+                {
+                    _logger.LogInformation("Loaded symbols from PLC");
+                }
+                else
+                {
+                    _logger.LogError("Failed to load symbols from PLC");
+                }
+            }
         }
 
         private async Task<bool> Connect()
@@ -88,7 +121,7 @@ namespace AdsStressTester
             }
         }
 
-        public async Task<object> ReadSymbolValue(string symbolNames, int extraSize = 0)
+        public async Task<object> ReadSymbolValue(string symbolNames, int extraSize = 0, bool useJsonDataInterface = false)
         {
             await semaphore.WaitAsync();
             var symbolList = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(symbolNames);
@@ -98,36 +131,58 @@ namespace AdsStressTester
                 client.Connect(_netId, _port);
                 try
                 {
-                    if (symbolList != null)
+                    if (useJsonDataInterface)
                     {
-                        for (int i = 0; i < symbolList.Count; i++)
-                        {
-                            var symbolName = symbolList[i]["symbol"];
-                            ResultValue<IAdsSymbol>? symbol = _symbolsCache.Find(s => s.Value.InstancePath == symbolName);
-                            if (symbol == null)
-                            {
-                                ResultValue<IAdsSymbol> newSymbol = await client.ReadSymbolAsync(symbolName, _cancel);
-                                if (newSymbol != null)
-                                {
-                                    //Put symbol in cache
-                                    _symbolsCache.Add(newSymbol);
-                                    symbol = newSymbol;
-                                }
-                            }
+                        // Access via JSON Data Interface https://infosys.beckhoff.com/english.php?content=../content/1033/tf6020_tc3_json_data_interface/10821785483.html&id=                    
+                        byte[] writeData = new byte[symbolNames.Length + 1];
+                        MemoryStream writeStream = new MemoryStream(writeData);
+                        BinaryWriter writer = new BinaryWriter(writeStream);
+                        writer.Write(Encoding.ASCII.GetBytes(symbolNames));
 
-                            // Getvalue from PLC
-                            var value = await client.ReadValueAsync(symbol.Value as ISymbol, _cancel);
-                            if (value != null && value.Value != null)
+                        byte[] readData = new byte[_defaultBitValue + extraSize];
+
+                        client.ReadWrite(0xf070, 0, readData, writeData);
+
+                        var responseString = Encoding.ASCII.GetString(readData);
+                        return responseString;
+                    }
+                    else
+                    {
+                        if (symbolList != null)
+                        {
+                            for (int i = 0; i < symbolList.Count; i++)
                             {
-                                // Append the value to the symbol list
-                                symbolList[i]["symbol"] = symbolName + ", " + "value:" + value.Value.ToString();
+                                var symbolName = symbolList[i]["symbol"];
+                                ResultValue<IAdsSymbol>? symbol = _symbolsCache.Find(s => s.Value.InstancePath == symbolName);
+                                if (symbol == null)
+                                {
+                                    byte[] data = new byte[symbolName.Length + 1];
+                                    ResultRead resultRead = await client.ReadAsync(0xf070, 0, data.AsMemory(), _cancel);
+
+                                    ResultValue<IAdsSymbol> newSymbol = await client.ReadSymbolAsync(symbolName, _cancel);
+                                    if (newSymbol.Succeeded)
+                                    {
+                                        //Put symbol in cache
+                                        _symbolsCache.Add(newSymbol);
+                                        symbol = newSymbol;
+                                    }
+                                }
+
+                                // Getvalue from PLC
+                                var value = await client.ReadValueAsync(symbol.Value as ISymbol, _cancel);
+                                if (value.Succeeded)
+                                {
+                                    // Append the value to the symbol list
+                                    symbolList[i]["symbol"] = symbolName + ", " + "value:" + value.Value.ToString();
+                                }
+
                             }
                         }
-                    }
 
-                    // Convert all symbols and values to Json and return
-                    string symbolsWithValues = JsonConvert.SerializeObject(symbolList, Formatting.None);
-                    return symbolsWithValues;
+                        // Convert all symbols and values to Json and return
+                        string symbolsWithValues = JsonConvert.SerializeObject(symbolList, Formatting.None);
+                        return symbolsWithValues;
+                    }
                 }
                 catch (Exception e)
                 {
