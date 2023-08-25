@@ -11,7 +11,8 @@
         "Microsoft": "Error",
         "SymbolValidator.Program": "Warning",
         "API.Services": "Information",
-        "AdsStressTester.Program": "Information"
+        "AdsStressTester.Program": "Information",
+        "AdsStressTester.TwinCatServiceMQTT":  "Debug"
       }
     },
     "WriteTo": [

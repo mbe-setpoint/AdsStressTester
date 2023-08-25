@@ -16,11 +16,11 @@ namespace AdsStressTester
     public class TwinCatSymbolMapper
     {
         private readonly ILogger<TwinCatSymbolMapper> _logger;
-        private readonly TwinCatService _twinCatService;
+        private readonly TwinCatServiceADS _twinCatService;
         private Dictionary<string, Dictionary<string, List<string>>> _symbolsDict;
         private readonly string _symbolFilePath;
 
-        public TwinCatSymbolMapper(ILogger<TwinCatSymbolMapper> logger, TwinCatService twinCatService, string symbolFilePath = "adsSymbols.json")
+        public TwinCatSymbolMapper(ILogger<TwinCatSymbolMapper> logger, TwinCatServiceADS twinCatService, string symbolFilePath = "adsSymbols.json")
         {
             _logger = logger;
             _twinCatService = twinCatService;

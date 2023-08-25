@@ -19,14 +19,14 @@ namespace AdsStressTester
     internal class Program
     {
         static async Task<int> Main(string[] args)
-        {
-
-            ILogger<TwinCatService> twinCatServiceLogger;
+        {            
+            ILogger<TwinCatServiceADS> twinCatServiceADSLogger;
+            ILogger<TwinCatServiceMQTT> twinCatServiceMQTTLogger;
             ILogger<TwinCatSymbolMapper> twinCatSymbolMapperLogger;
             ILogger<Program> mainLogger;
 
             int numberOfRuns = 10;
-            int milisecondsDelay = 10;
+            int milisecondsDelay = 500;
 
             // Setup loggers
             IConfiguration config = new ConfigurationBuilder()
@@ -38,14 +38,16 @@ namespace AdsStressTester
 
             using (ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddSerilog()))
             {
-                twinCatServiceLogger = factory.CreateLogger<TwinCatService>();
+                twinCatServiceADSLogger = factory.CreateLogger<TwinCatServiceADS>();
+                twinCatServiceMQTTLogger = factory.CreateLogger<TwinCatServiceMQTT>();
                 mainLogger = factory.CreateLogger<Program>();
                 twinCatSymbolMapperLogger = factory.CreateLogger<TwinCatSymbolMapper>();
             }
 
             // Setup services
-            TwinCatService twinCatService = new TwinCatService(config, twinCatServiceLogger);
-            TwinCatSymbolMapper symbolMapper = new TwinCatSymbolMapper(twinCatSymbolMapperLogger, twinCatService, symbolFilePath: "adsSymbols_bsdtest.json");
+            TwinCatServiceADS twinCatServiceADS = new TwinCatServiceADS(config, twinCatServiceADSLogger);
+            TwinCatServiceMQTT twinCatServiceMQTT = new TwinCatServiceMQTT(config, twinCatServiceMQTTLogger);
+            TwinCatSymbolMapper symbolMapper = new TwinCatSymbolMapper(twinCatSymbolMapperLogger, twinCatServiceADS, symbolFilePath: "adsSymbols_bsdtest.json");
 
             Parser.Default.ParseArguments<Options>(args)
                   .WithParsed<Options>(o =>
@@ -65,11 +67,11 @@ namespace AdsStressTester
                       mainLogger.LogInformation($"Using {milisecondsDelay} ms between iterations");
                   });
 
-            var stresser = new Stresser(mainLogger, twinCatService, symbolMapper);
-            var eventMonitor = new EventLoggerMonitor(mainLogger, config, twinCatService);
+            var stresser = new Stresser(mainLogger, twinCatServiceADS, twinCatServiceMQTT, symbolMapper);
+            var eventMonitor = new EventLoggerMonitor(mainLogger, config, twinCatServiceADS);
             eventMonitor.ConnectLogger();
             var stopwatch = Stopwatch.StartNew();
-            var result = await stresser.DoStress(numberOfRuns: numberOfRuns, millisecondsDelay: milisecondsDelay, config: config, useTwinCatSerive: false);
+            var result = await stresser.DoStress(numberOfRuns: numberOfRuns, millisecondsDelay: milisecondsDelay, config: config, useMQTT: true);
             stopwatch.Stop();
             mainLogger.LogInformation($"Time to run {numberOfRuns} iterations was: {stopwatch.ElapsedMilliseconds} ms");           
             return result;
@@ -80,31 +82,31 @@ namespace AdsStressTester
     internal class Stresser
     {
         private readonly ILogger<Program> _logger;
-        private readonly TwinCatService _twinCatService;
+        private readonly TwinCatServiceADS _twinCatServiceADS;
+        private readonly TwinCatServiceMQTT _twinCatServiceMQTT;
         private readonly TwinCatSymbolMapper _twinCatSymbolMapper;
 
-        public Stresser(ILogger<Program> logger, TwinCatService twinCatService, TwinCatSymbolMapper twinCatSymbolMapper)
+        public Stresser(ILogger<Program> logger, TwinCatServiceADS twinCatServiceADS, TwinCatServiceMQTT twinCatServiceMQTT, TwinCatSymbolMapper twinCatSymbolMapper)
         {
             _logger = logger;
-            _twinCatService = twinCatService;
+            _twinCatServiceADS = twinCatServiceADS;
+            _twinCatServiceMQTT = twinCatServiceMQTT;
             _twinCatSymbolMapper = twinCatSymbolMapper;
         }
 
-        public async Task<int> DoStress(int numberOfRuns, int millisecondsDelay, IConfiguration config, bool useTwinCatSerive = true)
+        public async Task<int> DoStress(int numberOfRuns, int millisecondsDelay, IConfiguration config, bool useMQTT = true)
         {
-            LoadGenerator loadGenerator = new LoadGenerator(_logger, _twinCatService, _twinCatSymbolMapper, config);
+            LoadGenerator loadGenerator = new LoadGenerator(_logger, _twinCatServiceADS, _twinCatServiceMQTT, _twinCatSymbolMapper, config);
             try
             {
-
                 _logger.LogInformation("Running test");
                 if (numberOfRuns < 0)
                 {
                     _logger.LogInformation("Running until stopped. Press Ctrl+c to terminate");
                 }
-                _ = await loadGenerator.GetData(numberOfRuns, millisecondsDelay, useTwinCatSerive);
+                _ = await loadGenerator.GetData(numberOfRuns, millisecondsDelay, useMQTT);
                 _logger.LogInformation("Finished");
                 return 0;
-
             }
             catch (Exception e)
             {

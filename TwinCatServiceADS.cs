@@ -9,9 +9,9 @@ using TwinCAT.TypeSystem;
 
 namespace AdsStressTester
 {
-    public class TwinCatService : IDisposable
+    public class TwinCatServiceADS : IDisposable
     {
-        private readonly ILogger<TwinCatService> _logger;
+        private readonly ILogger<TwinCatServiceADS> _logger;
         private AdsClient _client;
         private readonly IConfiguration _config;
         private readonly CancellationToken _cancel;
@@ -29,7 +29,7 @@ namespace AdsStressTester
 
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
-        public TwinCatService(IConfiguration config, ILogger<TwinCatService> logger)
+        public TwinCatServiceADS(IConfiguration config, ILogger<TwinCatServiceADS> logger)
         {
             _client = new AdsClient();
             CancellationTokenSource cancelSource = new CancellationTokenSource();

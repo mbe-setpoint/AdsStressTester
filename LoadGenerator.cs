@@ -8,24 +8,26 @@ namespace AdsStressTester
     {
         private readonly ILogger _logger;
         private readonly IConfiguration _config;
-        private readonly TwinCatService _twinCatService;
+        private readonly TwinCatServiceADS _twinCatServiceADS;
+        private readonly TwinCatServiceMQTT _twinCatServiceMQTT;
         private readonly TwinCatSymbolMapper _symbolMapper;
 
-        public LoadGenerator(ILogger logger, TwinCatService twinCatService, TwinCatSymbolMapper symbolMapper, IConfiguration config)
+        public LoadGenerator(ILogger logger, TwinCatServiceADS twinCatServiceADS, TwinCatServiceMQTT twinCatServiceMQTT, TwinCatSymbolMapper symbolMapper, IConfiguration config)
         {
             _logger = logger;
             _config = config;
-            _twinCatService = twinCatService;
+            _twinCatServiceADS = twinCatServiceADS;
+            _twinCatServiceMQTT = twinCatServiceMQTT;
             _symbolMapper = symbolMapper;
         }
 
-        public async Task<bool> GetData(int numberOfRuns, int millisecondsDelay, bool useTwinCatService = true)
+        public async Task<bool> GetData(int numberOfRuns, int millisecondsDelay, bool useMQTT = true)
         {
             var hubs = _config.GetSection("hubs").Get<List<string>>();
             var variables = _config.GetSection("adsWriteVariables").Get<List<Dictionary<string, dynamic>>>();
             var jsonDataInterface = new JsonDataInterface();
 
-            using (_twinCatService)
+            using (_twinCatServiceADS)
             {
                 if (hubs != null && variables != null)
                 {
@@ -38,13 +40,13 @@ namespace AdsStressTester
                         {
                             var symbolString = _symbolMapper.GetSymbolsStringForHub(hub);
 
-                            if (useTwinCatService)
+                            if (useMQTT)
                             {
-                                _data = await _twinCatService.ReadSymbolValue(symbolString);                                
+                                _data = await _twinCatServiceMQTT.ReadSymbolValue(symbolString);                                
                             }
                             else
                             {
-                                _data = jsonDataInterface.getData(symbolString);
+                                _data = await _twinCatServiceADS.ReadSymbolValue(symbolString);
                             }
 
                             if (!string.IsNullOrEmpty(_data))
@@ -70,12 +72,12 @@ namespace AdsStressTester
 
                         if (i % 4 == 0)
                         {
-                            //WriteValue(variables);
+                            // WriteValue(variables, useMQTT);
                         }
 
                         if (i % 7 == 0)
                         {
-                            //CallRpcMethod();
+                            // CallRpcMethod(useMQTT);
                         }
 
                         i++;
@@ -90,7 +92,7 @@ namespace AdsStressTester
             }
         }
 
-        private async void CallRpcMethod()
+        private async void CallRpcMethod(bool useMQTT)
         {            
             var methods = _symbolMapper.GetRpcMethodsInHubs();
             if (methods.Count > 0)
@@ -103,7 +105,16 @@ namespace AdsStressTester
                 var vars = symbolMethodVars[2];
 
                 _logger.LogInformation($"Calling RPC Method {symbol} - {method}");
-                TwinCAT.Ads.ResultRpcMethod result = (TwinCAT.Ads.ResultRpcMethod)await _twinCatService.InvokeRpcMethod(symbol, method, vars);
+                TwinCAT.Ads.ResultRpcMethod result;
+                if (useMQTT)
+                {
+                    result = (TwinCAT.Ads.ResultRpcMethod)await _twinCatServiceMQTT.InvokeRpcMethod(symbol, method, vars);
+                }
+                else
+                {
+                    result = (TwinCAT.Ads.ResultRpcMethod)await _twinCatServiceADS.InvokeRpcMethod(symbol, method, vars);
+                }
+                
                 if (result.Failed)
                 {
                     _logger.LogError($"Call to {symbol} - {method} failed. Result: {result.ErrorCode}");
@@ -111,7 +122,7 @@ namespace AdsStressTester
             }
         }
 
-        private async void WriteValue(List<Dictionary<string, dynamic>> variables)
+        private async void WriteValue(List<Dictionary<string, dynamic>> variables, bool useMQTT)
         {
             Random rnd = new Random();
             var variableIndex = rnd.Next(variables.Count - 1);
@@ -119,7 +130,16 @@ namespace AdsStressTester
             var value = variables[variableIndex].Values.First();
             JsonDto variable = new JsonDto { Symbol = symbol, Value = value };
             _logger.LogDebug($"Writing symbol: {symbol} with value: {value}");
-            var result = await _twinCatService.WriteSymbolValue(variable);
+            object result;
+            if (useMQTT)
+            {
+                result = await _twinCatServiceMQTT.WriteSymbolValue(variable);
+            }
+            else
+            {
+                result = await _twinCatServiceADS.WriteSymbolValue(variable);
+            }
+             
             if (result != null && result.ToString().Contains("error"))
             {
                 _logger.LogError($"Failed to write to: {symbol}");

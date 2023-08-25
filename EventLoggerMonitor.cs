@@ -8,11 +8,11 @@ namespace AdsStressTester
     {
         private readonly ILogger _logger;
         private readonly TcEventLogger _eventLogger;
-        private readonly TwinCatService _twinCatService;
+        private readonly TwinCatServiceADS _twinCatService;
         private readonly IConfiguration _config;
         private readonly string? _netId;
 
-        public EventLoggerMonitor(ILogger logger, IConfiguration config, TwinCatService twinCatService)
+        public EventLoggerMonitor(ILogger logger, IConfiguration config, TwinCatServiceADS twinCatService)
         {
             _eventLogger = new TcEventLogger();
             _twinCatService = twinCatService;
